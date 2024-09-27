@@ -12,7 +12,8 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/search?term=${encodeURIComponent(term)}`);
+      const response = await fetch(`https://search-backend-two.vercel.app
+/api/search?term=${encodeURIComponent(term)}`);
       if (!response.ok) {
         throw new Error('Search failed');
       }
