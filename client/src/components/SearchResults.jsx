@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-export default function SearchResults({ results = [] }) {
+function SearchResults({ results = [] }) {
     const [activeTab, setActiveTab] = useState('all');
+    const [filterText, setFilterText] = useState('');
 
-    const youtubeResults = results.filter(result => result.type === 'youtube');
-    const otherResults = results.filter(result => result.type !== 'youtube');
+    const youtubeResults = useMemo(() => results.filter(result => result.type === 'youtube'), [results]);
+    const otherResults = useMemo(() => results.filter(result => result.type !== 'youtube'), [results]);
 
-    const displayResults = activeTab === 'all' ? results : 
-                                                 activeTab === 'youtube' ? youtubeResults : otherResults;
+    const filteredResults = useMemo(() => {
+        const tabResults = activeTab === 'all' ? results : 
+                                             activeTab === 'youtube' ? youtubeResults : otherResults;
+        
+        return tabResults.filter(result => 
+            result.title.toLowerCase().includes(filterText.toLowerCase()) ||
+            result.description.toLowerCase().includes(filterText.toLowerCase())
+        );
+    }, [activeTab, filterText, results, youtubeResults, otherResults]);
 
     return (
         <div className="search-results">
@@ -31,12 +39,27 @@ export default function SearchResults({ results = [] }) {
                     Other Results
                 </button>
             </div>
+
+            <div className="filter-container">
+                <input
+                    type="text"
+                    placeholder="Filter results..."
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                    className="filter-input"
+                />
+                <button onClick={() => setFilterText('')} className="clear-button">
+                    Clear
+                </button>
+            </div>
+
             <div className="results-grid">
-                {displayResults.map((result, index) => (
+                {filteredResults.map((result, index) => (
                     <ResultCard key={index} result={result} />
                 ))}
             </div>
-            <style>{`
+
+            <style jsx>{`
                 .search-results {
                     font-family: Arial, sans-serif;
                     max-width: 1200px;
@@ -60,6 +83,28 @@ export default function SearchResults({ results = [] }) {
                 .tab.active {
                     background-color: #007bff;
                     color: white;
+                }
+                .filter-container {
+                    display: flex;
+                    margin-bottom: 20px;
+                }
+                .filter-input {
+                    flex-grow: 1;
+                    padding: 10px;
+                    font-size: 16px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
+                .clear-button {
+                    margin-left: 10px;
+                    padding: 10px 20px;
+                    background-color: #f0f0f0;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+                .clear-button:hover {
+                    background-color: #e0e0e0;
                 }
                 .results-grid {
                     display: grid;
@@ -91,11 +136,11 @@ function ResultCard({ result }) {
             </div>
             {result.type === 'youtube' && (
                 <div className="youtube-meta">
-                    <span>Views: {result.views.toLocaleString()}</span>
+                    <span>Views: {result.views?.toLocaleString() ?? 'N/A'}</span>
                     <span>Likes: {result.likes?.toLocaleString() ?? 'N/A'}</span>
                 </div>
             )}
-            <style >{`
+            <style jsx>{`
                 .result-card {
                     border: 1px solid #e0e0e0;
                     border-radius: 8px;
@@ -145,3 +190,5 @@ function ResultCard({ result }) {
         </div>
     );
 }
+
+export default SearchResults;
