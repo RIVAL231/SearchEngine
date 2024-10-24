@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SearchForm from './components/SearchEngineForm';
 import SearchResults from './components/SearchResults';
 import './globals.css';
@@ -26,7 +26,9 @@ export default function App() {
       setLoading(false);
     }
   };
-
+useEffect(() => {  
+  Weglot.refresh();
+}, []);
   return (
     <div className="container">
       <h1>Educational Search</h1>
